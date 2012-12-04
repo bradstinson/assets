@@ -70,7 +70,7 @@ Which will return:
 <link rel="stylesheet" href="/assets/cache/3cf89b9f723e22c1caf26f8d4d1fdc31.css">
 <script src="/assets/cache/9cf2803d8f075cb7d1ad31940738f35e.js"></script>
 */
-
+```
 
 Groups
 ------
