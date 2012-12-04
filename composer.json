@@ -14,7 +14,7 @@
 	],
     "require": {
         "php": ">=5.3.0",
-        "matthiasmullie/minify": "dev-master",
+        "matthiasmullie/minify": "dev-master"
 	},
     "autoload": {
         "classmap": [""]
