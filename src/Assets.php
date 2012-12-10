@@ -1,24 +1,22 @@
 <?php
 
-class Assets_Exception extends Exception {}
-
 class Assets {
 
-	// All assets go in here
-	public static $assets 	= array('js' => array(), 'css' => array());
+    // All assets go in here
+    public static $assets   = array('js' => array(), 'css' => array());
 
-	// Is document HTML5?
+    // Is document HTML5?
     public static $html5    = true;
 
     // Paths/URL
-    public static $paths 	= array(
-							   	'css' => 'assets/css/',
-							   	'js' => 'assets/js/',
-							  	'cache' => 'assets/cache/'
-							 );
+    public static $paths    = array(
+                                'css' => 'assets/css/',
+                                'js' => 'assets/js/',
+                                'cache' => 'assets/cache/'
+                             );
 
     // URL to prepend to all generated tags
-    public static $baseurl 	= '/';
+    public static $baseurl  = '/';
 
     // Clear previous cache files
     public static $auto_clear_cache = true;
@@ -31,7 +29,7 @@ class Assets {
      */
     public static function css($files='')
     {
-    	return self::_add_assets($files, 'css');
+        return self::addAssets($files, 'css');
     }
 
 
@@ -42,7 +40,7 @@ class Assets {
      */
     public static function js($files='')
     {
-    	return self::_add_assets($files, 'js');
+        return self::addAssets($files, 'js');
     }
 
 
@@ -52,7 +50,7 @@ class Assets {
      * @param  string  $type     
      * @return boolean
      */
-    protected static function _add_assets($files='', $type='')
+    protected static function addAssets($files='', $type='')
     {
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
@@ -72,9 +70,9 @@ class Assets {
      * Combines, minifies, and renders CSS file (returns HTML tags)
      * @return string
      */
-    public static function render_css()
+    public static function renderCss()
     {
-    	return self::_render_assets('css');
+        return self::renderAssets('css');
     }   
 
 
@@ -82,9 +80,9 @@ class Assets {
      * Combines, minifies, and renders JS file (returns HTML tags)
      * @return string
      */
-    public static function render_js()
+    public static function renderJs()
     {
-    	return self::_render_assets('js');
+        return self::renderAssets('js');
     }
 
 
@@ -93,17 +91,17 @@ class Assets {
      * @param  string  $type
      * @return string
      */
-    protected static function _render_assets($type='')
+    protected static function renderAssets($type='')
     {
         if(is_array(self::$assets[$type]) && count(self::$assets[$type])) {
 
-	        if($type === 'css'){
-	            $asset =  new MinifyCSS();
-	        }elseif($type === 'js'){
-	            $asset =  new MinifyJS();
-	        }
+            if($type === 'css'){
+                $asset =  new Assets\Minify\MinifyCSS();
+            }elseif($type === 'js'){
+                $asset =  new Assets\Minify\MinifyJS();
+            }
             
-            $last_modified = self::_last_modified(self::$assets[$type], $type);
+            $last_modified = self::lastModified(self::$assets[$type], $type);
             
             $cached_filename = self::$paths['cache'].md5(implode('', self::$assets[$type]).$last_modified).'.'.$type;
 
@@ -111,16 +109,16 @@ class Assets {
 
             if(! file_exists($cached_filename)){
 
-                if(self::$auto_clear_cache){self::_auto_clear_cache($type);}
+                if(self::$auto_clear_cache){self::autoClearCache($type);}
 
-            	foreach(self::$assets[$type] as $file){
-	                $asset->add(self::$paths[$type].$file);
-	            }
+                foreach(self::$assets[$type] as $file){
+                    $asset->add(self::$paths[$type].$file);
+                }
 
                 $asset->minify($cached_filename);
             }
     
-            return self::_generate_tag($cached_filename, $type);
+            return self::generateTag($cached_filename, $type);
         }
     }
 
@@ -131,8 +129,8 @@ class Assets {
      */
     public static function render()
     {
-        $tag = self::render_css();
-        $tag .= self::render_js();
+        $tag = self::renderCss();
+        $tag .= self::renderJs();
         return $tag;
     }
 
@@ -143,7 +141,7 @@ class Assets {
      * @param  string  $type
      * @return string
      */
-    protected static function _generate_tag($file = null, $type = null, $attributes = '')
+    protected static function generateTag($file = null, $type = null, $attributes = '')
     {
         if($type === 'css'){
             if(self::$html5){
@@ -169,7 +167,7 @@ class Assets {
      * @param  string  $type
      * @return string
      */
-    protected static function _last_modified($files = null, $type='')
+    protected static function lastModified($files = null, $type='')
     {
         $last_modified = 0;
 
@@ -187,7 +185,7 @@ class Assets {
      * @param  string  $type
      * @return boolean
      */
-    protected static function _auto_clear_cache($type='')
+    protected static function autoClearCache($type='')
     {
         // Find list of all files in cache path
         $files = scandir(self::$paths['cache']);
