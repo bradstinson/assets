@@ -29,7 +29,7 @@ By default, Assets will minify both of these files and combine them into a singl
 To include this file in your page, use the following:
 
 ```php
-echo Assets::renderCss();
+echo Assets::render_css();
 /*
 Returns something like:
 <link rel="stylesheet" href="/assets/cache/3cf89b9f723e22c1caf26f8d4d1fdc31.css">
@@ -56,7 +56,7 @@ By default, Assets will minify both of these files and combine them into a singl
 To include this file in your page, use the following:
 
 ```php
-echo Assets::renderJs();
+echo Assets::render_js();
 /*
 Returns something like:
 <script src="/assets/cache/9cf2803d8f075cb7d1ad31940738f35e.js"></script>
@@ -72,15 +72,11 @@ Which will return:
 */
 ```
 
-Groups
+
+Configuration
 ------
 
-This library currently does not offer support for groups. This is because the project I was working on did not require it. If enough
-requests are made, this may be added in a future version.
-
-
-Directory Structure
----------------------
+By default, this library assumes the following directory structure:
 
 ```
 assets/
@@ -89,6 +85,34 @@ assets/
    cache/
    
 ```
+
+However, you are now able to adjust any of these paths, if needed. 
+
+### CSS
+```php
+Assets::setPath('css', 'public/assets/css/'));
+```
+
+### JS
+```php
+Assets::setPath('js', 'public/assets/js/'));
+```
+
+### Cache
+```php
+Assets::setPath('cache', 'public/assets/cache/'));
+```
+
+### BaseURL
+```php
+Assets::setBaseurl('/'));
+```
+
+Groups
+------
+
+This library currently does not offer support for groups. This is because the project I was working on did not require it. If enough
+requests are made, this may be added in a future version.
 
 Thanks
 ------

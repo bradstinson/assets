@@ -23,6 +23,15 @@ class Assets {
 
 
     /**
+     * Constructor
+     */
+    public function __construct($paths= array(), $baseurl='/')
+    {
+
+    }
+
+
+    /**
      * Adds a CSS file to be rendered
      * @param  string  $files
      * @return boolean
@@ -56,10 +65,12 @@ class Assets {
         $files = is_string($files) ? array($files) : $files;
 
         foreach($files as $file){
+            
             // If file exists, add to array for processing
-            if(file_exists(self::$paths[$type].$file)) {
-                self::$assets[$type][] = $file;
-            }
+            if(! file_exists(self::$paths[$type].$file)) throw new AssetsException('The following file "' . self::$paths[$type].$file . '" could not be found.');
+            
+            // Add file to list of assets            
+            self::$assets[$type][] = $file;
         }
 
         return TRUE;
@@ -104,8 +115,6 @@ class Assets {
             $last_modified = self::lastModified(self::$assets[$type], $type);
             
             $cached_filename = self::$paths['cache'].md5(implode('', self::$assets[$type]).$last_modified).'.'.$type;
-
-            //Helpers::debug($cached_filename);
 
             if(! file_exists($cached_filename)){
 
@@ -204,5 +213,39 @@ class Assets {
         }
 
         return $last_modified;
-    }    
+    }
+
+
+    /**
+     * Sets path variables
+     * @param  string  $type
+     * @param  string  $path     
+     * @return boolean
+     */
+    public static function setPath($type='', $path='')
+    {
+        foreach(array('css', 'js', 'cache') as $path_type)
+        {
+            if($type == $path_type)
+            {
+                // Directory Exist?
+                if(! is_dir($path)) throw new AssetsException('The provided path "' . $path . '" does not exist.');
+
+                // Set path
+                self::$paths[$type] = $path;
+            }
+        }
+    } 
+
+
+    /**
+     * Sets baseurl
+     * @param  string  $baseurl
+     * @return boolean
+     */
+    public static function setBaseurl($baseurl='/')
+    {
+        // Set baseurl
+        self::$baseurl = $baseurl;
+    }           
 }
