@@ -29,7 +29,7 @@ By default, Assets will minify both of these files and combine them into a singl
 To include this file in your page, use the following:
 
 ```php
-echo Assets::render_css();
+echo Assets::renderCss();
 /*
 Returns something like:
 <link rel="stylesheet" href="/assets/cache/3cf89b9f723e22c1caf26f8d4d1fdc31.css">
@@ -56,7 +56,7 @@ By default, Assets will minify both of these files and combine them into a singl
 To include this file in your page, use the following:
 
 ```php
-echo Assets::render_js();
+echo Assets::renderJs();
 /*
 Returns something like:
 <script src="/assets/cache/9cf2803d8f075cb7d1ad31940738f35e.js"></script>
