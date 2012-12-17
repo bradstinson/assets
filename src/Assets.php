@@ -3,33 +3,70 @@
 class Assets {
 
     // All assets go in here
-    public static $assets   = array('js' => array(), 'css' => array());
+    protected static $assets       = array('js' => array(), 'css' => array());
 
     // Is document HTML5?
-    public static $html5    = true;
+    protected static $HTML5        = true;
 
-    // Paths/URL
-    public static $paths    = array(
-                                'css' => 'assets/css/',
-                                'js' => 'assets/js/',
-                                'cache' => 'assets/cache/'
-                             );
+    // Directories
+    protected static $assets_dir   = 'assets/';
+    protected static $css_dir      = 'css/';
+    protected static $js_dir       = 'js/';
+    protected static $cache_dir    = 'cache/';
+    
+    // Paths
+    protected static $assets_path;
+    protected static $css_path;
+    protected static $js_path;
+    protected static $cache_path;
 
-    // URL to prepend to all generated tags
-    public static $baseurl  = '/';
+    // URLs
+    protected static $base_url = '/assets/';
+    protected static $css_url;
+    protected static $js_url;
+    protected static $cache_url;   
 
     // Clear previous cache files
-    public static $auto_clear_cache = true;
+    protected static $auto_clear_cache = true;
 
+    // Has library been initialized?
+    protected static $init = false;
 
     /**
      * Constructor
      */
-    public function __construct($paths= array(), $baseurl='/')
-    {
+    public function __construct(){}
 
+    /**
+     * Initialize Library (Set paths/directories)
+     */
+    public static function init()
+    {
+        // Configure paths, URLs
+        if(! self::$init) self::setPaths();
+
+        // Set initialization to TRUE
+        self::$init = true;
     }
 
+    /**
+     * Set paths and urls for future processing
+     */
+    public static function setPaths()
+    {
+        // Set Assets Path
+        if(! is_dir(self::$assets_dir)) throw new AssetsException('The provided directory "' . self::$assets_dir . '" does not exist.');
+
+        // Set paths
+        self::$css_path     = self::$assets_dir.self::$css_dir;
+        self::$js_path      = self::$assets_dir.self::$js_dir;
+        self::$cache_path   = self::$assets_dir.self::$cache_dir;
+
+        // Set URLs           
+        self::$css_url      = self::$base_url.self::$css_dir;
+        self::$js_url       = self::$base_url.self::$js_dir;
+        self::$cache_url    = self::$base_url.self::$cache_dir;
+    }        
 
     /**
      * Adds a CSS file to be rendered
@@ -38,9 +75,9 @@ class Assets {
      */
     public static function css($files='')
     {
+        self::init();
         return self::addAssets($files, 'css');
     }
-
 
     /**
      * Adds a JS file to be rendered
@@ -49,9 +86,9 @@ class Assets {
      */
     public static function js($files='')
     {
+        self::init();
         return self::addAssets($files, 'js');
     }
-
 
     /**
      * Add assets to be rendered
@@ -64,10 +101,15 @@ class Assets {
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
 
+        // Get path
+        if ($type === 'css') $path = self::$assets_dir.self::$css_dir;
+        elseif ($type === 'js') $path = self::$assets_dir.self::$js_dir;
+
+        // Load each asset, if file exists
         foreach($files as $file){
             
             // If file exists, add to array for processing
-            if(! file_exists(self::$paths[$type].$file)) throw new AssetsException('The following file "' . self::$paths[$type].$file . '" could not be found.');
+            if(! file_exists($path . $file)) throw new AssetsException('The following file "' . $path . $file . '" could not be found.');
             
             // Add file to list of assets            
             self::$assets[$type][] = $file;
@@ -75,7 +117,6 @@ class Assets {
 
         return TRUE;
     }    
-
 
     /**
      * Combines, minifies, and renders CSS file (returns HTML tags)
@@ -86,7 +127,6 @@ class Assets {
         return self::renderAssets('css');
     }   
 
-
     /**
      * Combines, minifies, and renders JS file (returns HTML tags)
      * @return string
@@ -95,7 +135,6 @@ class Assets {
     {
         return self::renderAssets('js');
     }
-
 
     /**
      * Combines, minifies, and renders asset file (returns HTML tags)
@@ -106,31 +145,37 @@ class Assets {
     {
         if(is_array(self::$assets[$type]) && count(self::$assets[$type])) {
 
-            if($type === 'css'){
-                $asset =  new Assets\Minify\MinifyCSS();
-            }elseif($type === 'js'){
-                $asset =  new Assets\Minify\MinifyJS();
-            }
+            // Create Minify Object
+            if ($type === 'css') $asset = new Assets\Minify\MinifyCSS();
+            elseif ($type === 'js') $asset = new Assets\Minify\MinifyJS();
+
+            // Get path
+            if ($type === 'css') $path = self::$css_path;
+            elseif ($type === 'js') $path = self::$js_path;
             
+            // Find latest modified date from list of assets
             $last_modified = self::lastModified(self::$assets[$type], $type);
             
-            $cached_filename = self::$paths['cache'].md5(implode('', self::$assets[$type]).$last_modified).'.'.$type;
+            // Create cached filename
+            $cached_filename = md5(implode('', self::$assets[$type]).$last_modified).'.'.$type;
 
+            // If cached file doesn't already exist
             if(! file_exists($cached_filename)){
 
+                // Clear all existing cache files (if set)
                 if(self::$auto_clear_cache){self::autoClearCache($type);}
 
+                // Combine, minify assets into new cached file
                 foreach(self::$assets[$type] as $file){
-                    $asset->add(self::$paths[$type].$file);
+                    $asset->add($path.$file);
                 }
-
-                $asset->minify($cached_filename);
+                $asset->minify(self::$cache_path.$cached_filename);
             }
     
+            // Return HTML tags
             return self::generateTag($cached_filename, $type);
         }
     }
-
 
     /**
      * Renders CSS/JS files (returns HTML tags)
@@ -143,7 +188,6 @@ class Assets {
         return $tag;
     }
 
-
     /**
      * Display an HTML tag
      * @param  string  $file
@@ -152,23 +196,22 @@ class Assets {
      */
     protected static function generateTag($file = null, $type = null, $attributes = '')
     {
-        if($type === 'css'){
-            if(self::$html5){
-                $tag = '<link rel="stylesheet" href="'.self::$baseurl.$file.'"'.$attributes.'>'.PHP_EOL;
+        if($type === 'css') {
+            if(self::$HTML5) {
+                $tag = '<link rel="stylesheet" href="'.self::$cache_url.$file.'"'.$attributes.'>'.PHP_EOL;
             } else {
-                $tag = '<link type="text/css" href="'.self::$baseurl.$file.'"'.$attributes.' />'.PHP_EOL;
+                $tag = '<link type="text/css" href="'.self::$cache_url.$file.'"'.$attributes.' />'.PHP_EOL;
             }
-        }elseif($type === 'js'){
-            if (self::$html5){
-                $tag = '<script src="'.self::$baseurl.$file.'"'.$attributes.'></script>'.PHP_EOL; 
-            }else{
-                $tag = '<script src="'.self::$baseurl.$file.'" type="text/javascript"'.$attributes.'></script>'.PHP_EOL;
+        } elseif($type === 'js') {
+            if (self::$HTML5) {
+                $tag = '<script src="'.self::$cache_url.$file.'"'.$attributes.'></script>'.PHP_EOL; 
+            } else {
+                $tag = '<script src="'.self::$cache_url.$file.'" type="text/javascript"'.$attributes.'></script>'.PHP_EOL;
             }
         }
 
         return $tag;
     }
-
 
     /**
      * Finds the last modified time for an array of files
@@ -181,71 +224,62 @@ class Assets {
         $last_modified = 0;
 
         foreach($files as $file){
-            $filename = self::$paths[$type].$file;
+            $filename = self::$cache_path.$file;
             $last_modified = (filemtime($filename) > $last_modified) ? filemtime($filename) : $last_modified; 
         }
 
         return date('YmdHis', $last_modified);
     }
 
-
     /**
      * If flagged, auto clear JS/CSS files from cache
-     * @param  string  $type
      * @return boolean
      */
-    protected static function autoClearCache($type='')
+    protected static function autoClearCache()
     {
         // Find list of all files in cache path
-        $files = scandir(self::$paths['cache']);
+        $files = scandir(self::$cache_path);
 
         foreach($files as $file){
-            $file_info = pathinfo(self::$paths['cache'].$file);
+
+            $file_info = pathinfo(self::$cache_path.$file);
 
             if ($type === 'css')
             {
-                if (isset($file_info['extension']) and strtolower($file_info['extension']) === 'css') unlink(self::$paths['cache'].$file);
+                if (strtolower($file_info['extension']) === 'css') unlink(self::$cache_path.$file);
             }
             elseif ($type === 'js')
             {
-                if (isset($file_info['extension']) and strtolower($file_info['extension']) === 'js') unlink(self::$paths['cache'].$file);
+                if (strtolower($file_info['extension']) === 'js') unlink(self::$cache_path.$file);
             }
         }
 
         return $last_modified;
     }
 
-
     /**
-     * Sets path variables
-     * @param  string  $type
-     * @param  string  $path     
+     * Sets $assets_dir variable
+     * @param  string  $dir
      * @return boolean
      */
-    public static function setPath($type='', $path='')
+    public static function setAssetsDirectory($dir='')
     {
-        foreach(array('css', 'js', 'cache') as $path_type)
-        {
-            if($type == $path_type)
-            {
-                // Directory Exist?
-                if(! is_dir($path)) throw new AssetsException('The provided path "' . $path . '" does not exist.');
 
-                // Set path
-                self::$paths[$type] = $path;
-            }
-        }
-    } 
+        // Directory Exist?
+        if(! is_dir($dir)) throw new AssetsException('The provided directory "' . $dir . '" does not exist.');
 
+        // Set path
+        self::$assets_dir = $dir;
+    }      
 
     /**
-     * Sets baseurl
-     * @param  string  $baseurl
+     * Sets base_url
+     * @param  string  $base_url
      * @return boolean
      */
-    public static function setBaseurl($baseurl='/')
+    public static function setBaseurl($base_url='/assets/')
     {
-        // Set baseurl
-        self::$baseurl = $baseurl;
+        // Set base_url
+        self::$base_url = $base_url;
     }           
 }
