@@ -258,18 +258,17 @@ class Assets {
     }
 
     /**
-     * Sets $assets_dir variable
+     * Sets path to the assets directory
      * @param  string  $dir
      * @return boolean
      */
-    public static function setAssetsDirectory($dir='')
+    public static function setPath($path='')
     {
-
         // Directory Exist?
-        if(! is_dir($dir)) throw new AssetsException('The provided directory "' . $dir . '" does not exist.');
+        if(! is_dir($path)) throw new AssetsException('The provided directory "' . $path . '" does not exist.');
 
         // Set path
-        self::$assets_dir = $dir;
+        self::$assets_dir = $path;
     }      
 
     /**

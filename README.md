@@ -86,21 +86,10 @@ assets/
    
 ```
 
-However, you are now able to adjust any of these paths, if needed. 
+However, you are now able to adjust the path to the assets directory (if needed): 
 
-### CSS
 ```php
-Assets::setPath('css', 'public/assets/css/'));
-```
-
-### JS
-```php
-Assets::setPath('js', 'public/assets/js/'));
-```
-
-### Cache
-```php
-Assets::setPath('cache', 'public/assets/cache/'));
+Assets::setPath('public/assets/css/'));
 ```
 
 ### BaseURL
