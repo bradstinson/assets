@@ -89,7 +89,7 @@ assets/
 However, you are now able to adjust the path to the assets directory (if needed): 
 
 ```php
-Assets::setPath('public/assets/css/'));
+Assets::setPath('public/assets/'));
 ```
 
 ### BaseURL
