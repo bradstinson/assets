@@ -223,8 +223,12 @@ class Assets {
     {
         $last_modified = 0;
 
+        // Get path
+        if ($type === 'css') $path = self::$css_path;
+        elseif ($type === 'js') $path = self::$js_path;
+
         foreach($files as $file){
-            $filename = self::$cache_path.$file;
+            $filename = $path.$file;
             $last_modified = (filemtime($filename) > $last_modified) ? filemtime($filename) : $last_modified; 
         }
 
@@ -244,17 +248,11 @@ class Assets {
 
             $file_info = pathinfo(self::$cache_path.$file);
 
-            if ($type === 'css')
+            if (in_array($file_info['extension'], array('css', 'js')))
             {
                 if (strtolower($file_info['extension']) === 'css') unlink(self::$cache_path.$file);
             }
-            elseif ($type === 'js')
-            {
-                if (strtolower($file_info['extension']) === 'js') unlink(self::$cache_path.$file);
-            }
         }
-
-        return $last_modified;
     }
 
     /**
