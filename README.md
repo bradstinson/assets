@@ -1,7 +1,7 @@
 Assets
 ======
-
 [![Build Status](https://travis-ci.org/bradstinson/assets.png?branch=master)](https://travis-ci.org/bradstinson/assets)
+
 
 Assets is yet another CSS/JavaScript minificaton and combination library. However, unlike most other libraries (which rely on Assetic), this takes a much more simplistic approach.
 
