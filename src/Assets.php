@@ -157,7 +157,7 @@ class Assets {
             $last_modified = self::lastModified(self::$assets[$type], $type);
             
             // Create cached filename
-            $cached_filename = md5(implode('', self::$assets[$type]).$last_modified).'.'.$type;
+            $cached_filename = self::generateCacheFilename($type);
 
             // If cached file doesn't already exist
             if(! file_exists($cached_filename)){
@@ -254,6 +254,19 @@ class Assets {
             }
         }
     }
+
+    /**
+     * Generate filename of rendered asset
+     * @return string
+     */
+    public static function generateCacheFilename($type='')
+    {
+        // Find latest modified date from list of assets
+        $last_modified = self::lastModified(self::$assets[$type], $type);
+        
+        // Create cached filename
+        return md5(implode('', self::$assets[$type]).$last_modified).'.'.$type;
+    }    
 
     /**
      * Sets path to the assets directory
