@@ -1,6 +1,8 @@
 Assets
 ======
 
+[![Build Status](https://travis-ci.org/bradstinson/assets.png?branch=master)](https://travis-ci.org/bradstinson/assets)
+
 Assets is yet another CSS/JavaScript minificaton and combination library. However, unlike most other libraries (which rely on Assetic), this takes a much more simplistic approach.
 
 Assets supports minifying and combining stylesheets and scripts, in order to reduce the number and size of http requests need to load a given page. Also, the generated file is also cached, which will prevent an application from having to generate the same file with every new request.
