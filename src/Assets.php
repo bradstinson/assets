@@ -162,6 +162,9 @@ class Assets {
             // If cached file doesn't already exist
             if(! file_exists($cached_filename)){
 
+                // Create cache directory if it does not exist
+                if (!is_dir(self::$cache_path)) mkdir(self::$cache_path);
+
                 // Clear all existing cache files (if set)
                 if(self::$auto_clear_cache){self::autoClearCache($type);}
 
