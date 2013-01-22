@@ -145,16 +145,9 @@ class Assets {
     {
         if(is_array(self::$assets[$type]) && count(self::$assets[$type])) {
 
-            // Create Minify Object
-            if ($type === 'css') $asset = new Assets\Minify\MinifyCSS();
-            elseif ($type === 'js') $asset = new Assets\Minify\MinifyJS();
-
             // Get path
             if ($type === 'css') $path = self::$css_path;
             elseif ($type === 'js') $path = self::$js_path;
-            
-            // Find latest modified date from list of assets
-            $last_modified = self::lastModified(self::$assets[$type], $type);
             
             // Create cached filename
             $cached_filename = self::generateCacheFilename($type);
@@ -164,6 +157,13 @@ class Assets {
 
                 // Create cache directory if it does not exist
                 if (!is_dir(self::$cache_path)) mkdir(self::$cache_path);
+
+                // Find latest modified date from list of assets
+                $last_modified = self::lastModified(self::$assets[$type], $type);
+            
+                // Create Minify Object
+                if ($type === 'css') $asset = new Assets\Minify\MinifyCSS();
+                elseif ($type === 'js') $asset = new Assets\Minify\MinifyJS();                
 
                 // Clear all existing cache files (if set)
                 if(self::$auto_clear_cache){self::autoClearCache($type);}
