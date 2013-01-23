@@ -294,5 +294,16 @@ class Assets {
     {
         // Set base_url
         self::$base_url = $base_url;
-    }           
+    }
+
+    /**
+     * Sets HTML5 variable
+     * @param  string  $html5
+     * @return boolean
+     */
+    public static function html5($html5=TRUE)
+    {
+        // Set HTML5
+        self::$HTML5 = $html5;
+    }               
 }
