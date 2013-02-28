@@ -240,9 +240,10 @@ class Assets {
 
     /**
      * If flagged, auto clear JS/CSS files from cache
+     * @param  string  $type     
      * @return boolean
      */
-    protected static function autoClearCache()
+    protected static function autoClearCache($type='')
     {
         // Find list of all files in cache path
         $files = scandir(self::$cache_path);
@@ -251,9 +252,9 @@ class Assets {
 
             $file_info = pathinfo(self::$cache_path.$file);
 
-            if (in_array($file_info['extension'], array('css', 'js')))
+            if ($file_info['extension'] == $type)
             {
-                if (strtolower($file_info['extension']) === 'css') unlink(self::$cache_path.$file);
+                unlink(self::$cache_path.$file);
             }
         }
     }
