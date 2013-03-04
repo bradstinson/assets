@@ -1,5 +1,7 @@
 <?php 
 
+namespace Assets\Minify;
+
 /**
  * Minify Exception class
  *
