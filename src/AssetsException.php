@@ -1,3 +1,3 @@
 <?php 
 
-class AssetsException extends Exception{}
+class AssetsException extends \Exception{}

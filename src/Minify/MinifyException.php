@@ -7,6 +7,6 @@ namespace Assets\Minify;
  *
  * @author Matthias Mullie <minify@mullie.eu>
  */
-class MinifyException extends Exception
+class MinifyException extends \Exception
 {
 }
