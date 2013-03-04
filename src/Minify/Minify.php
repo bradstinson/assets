@@ -103,10 +103,10 @@ abstract class Minify
 	protected function save($content, $path)
 	{
 		// create file & open for writing
-		if(($handler = @fopen($path, 'w')) === false) throw new MinifyException('The file "' . $path . '" could not be opened. Check if PHP has enough permissions.');
+		if(($handler = @fopen($path, 'w')) === false) throw new Assets\Minify\MinifyException('The file "' . $path . '" could not be opened. Check if PHP has enough permissions.');
 
 		// write to file
-		if(@fwrite($handler, $content) === false) throw new MinifyException('The file "' . $path . '" could not be written to. Check if PHP has enough permissions.');
+		if(@fwrite($handler, $content) === false) throw new Assets\Minify\MinifyException('The file "' . $path . '" could not be written to. Check if PHP has enough permissions.');
 
 		// close the file
 		@fclose($handler);

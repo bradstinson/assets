@@ -63,7 +63,7 @@ class MinifyCSS extends Minify
 		if($content === false) $content = $this->load($source);
 
 		// validate data
-		if($content == $source) throw new MinifyException('The data for "' . $source . '" could not be loaded, please make sure the path is correct.');
+		if($content == $source) throw new Assets\Minify\MinifyException('The data for "' . $source . '" could not be loaded, please make sure the path is correct.');
 
 		// the regex to match import statements
 		$importRegex = '/
@@ -302,7 +302,7 @@ class MinifyCSS extends Minify
 		if($content === false) $content = $this->load($source);
 
 		// validate data
-		if($content == $source) throw new MinifyException('The data for "' . $source . '" could not be loaded, please make sure the path is correct.');
+		if($content == $source) throw new Assets\Minify\MinifyException('The data for "' . $source . '" could not be loaded, please make sure the path is correct.');
 
 		if(preg_match_all('/url\((["\']?)((?!["\']?data:).*?\.(gif|png|jpg|jpeg|svg|woff))\\1\)/i', $content, $matches, PREG_SET_ORDER))
 		{
@@ -408,7 +408,7 @@ class MinifyCSS extends Minify
 		if($content === false) $content = $this->load($source);
 
 		// validate data
-		if($content == $source) throw new MinifyException('The data for "' . $source . '" could not be loaded, please make sure the path is correct.');
+		if($content == $source) throw new Assets\Minify\MinifyException('The data for "' . $source . '" could not be loaded, please make sure the path is correct.');
 
 		// regex to match paths
 		$pathsRegex = '/
