@@ -1,6 +1,6 @@
 <?php
 
-namespace Assets\Filters;
+namespace Assets\Filter;
 
 /**
  * lessphp v0.3.9

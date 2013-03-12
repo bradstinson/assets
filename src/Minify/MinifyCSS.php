@@ -594,7 +594,7 @@ class MinifyCSS extends Minify
 
 
 		// Create new Less Compiler object
-		$less = new \Assets\Filters\Less;
+		$less = new \Assets\Filter\Less;
 
 		// Process Less
 		$content = $less->compile($content);
