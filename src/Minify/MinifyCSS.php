@@ -580,7 +580,7 @@ class MinifyCSS extends Minify
 		return $content;
 	}
 
-/**
+	/**
 	 * Compiles less file into CSS
 	 *
 	 * @param string $content The less file to compile
