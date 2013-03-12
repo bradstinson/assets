@@ -3,16 +3,18 @@
 class Assets {
 
     // All assets go in here
-    protected static $assets       = array('js' => array(), 'css' => array());
+    protected static $assets        = array('js' => array(), 'css' => array(), 'less' => array(), 'coffee' => array());
 
     // Is document HTML5?
-    protected static $HTML5        = true;
+    protected static $HTML5         = true;
 
     // Directories
-    protected static $assets_dir   = 'assets/';
-    protected static $css_dir      = 'css/';
-    protected static $js_dir       = 'js/';
-    protected static $cache_dir    = 'cache/';
+    protected static $assets_dir    = 'assets/';
+    protected static $css_dir       = 'css/';
+    // protected static $less_dir      = 'less/';
+    protected static $js_dir        = 'js/';    
+    // protected static $coffee_dir    = 'coffee/';
+    protected static $cache_dir     = 'cache/';
     
     // Paths
     protected static $assets_path;
@@ -59,7 +61,9 @@ class Assets {
 
         // Set paths
         self::$css_path     = self::$assets_dir.self::$css_dir;
+        // self::$less_path    = self::$assets_dir.self::$less_dir;
         self::$js_path      = self::$assets_dir.self::$js_dir;
+        // self::$coffee_path  = self::$assets_dir.self::$coffee_dir;
         self::$cache_path   = self::$assets_dir.self::$cache_dir;
 
         // Set URLs           
@@ -79,6 +83,17 @@ class Assets {
         return self::addAssets($files, 'css');
     }
 
+    // /**
+    //  * Adds a Less file to be rendered
+    //  * @param  string  $files
+    //  * @return boolean
+    //  */
+    // public static function less($files='')
+    // {
+    //     self::init();
+    //     return self::addAssets($files, 'less');
+    // }
+
     /**
      * Adds a JS file to be rendered
      * @param  string  $files
@@ -89,6 +104,17 @@ class Assets {
         self::init();
         return self::addAssets($files, 'js');
     }
+
+    // /**
+    //  * Adds a CoffeeScript file to be rendered
+    //  * @param  string  $files
+    //  * @return boolean
+    //  */
+    // public static function coffeescript($files='')
+    // {
+    //     self::init();
+    //     return self::addAssets($files, 'coffee');
+    // }    
 
     /**
      * Add assets to be rendered
@@ -103,7 +129,9 @@ class Assets {
 
         // Get path
         if ($type === 'css') $path = self::$assets_dir.self::$css_dir;
+        // elseif ($type === 'less') $path = self::$assets_dir.self::$less_dir;        
         elseif ($type === 'js') $path = self::$assets_dir.self::$js_dir;
+        // elseif ($type === 'coffee') $path = self::$assets_dir.self::$coffee_dir;
 
         // Load each asset, if file exists
         foreach($files as $file){
@@ -163,7 +191,7 @@ class Assets {
             
                 // Create Minify Object
                 if ($type === 'css') $asset = new Assets\Minify\MinifyCSS();
-                elseif ($type === 'js') $asset = new Assets\Minify\MinifyJS();                
+                elseif ($type === 'js') $asset = new Assets\Minify\MinifyJS();
 
                 // Clear all existing cache files (if set)
                 if(self::$auto_clear_cache){self::autoClearCache($type);}
