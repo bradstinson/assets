@@ -521,7 +521,8 @@ class MinifyCSS extends Minify
 		$content = $this->load($content);
 
 		// shorthand hex color codes
-0
+		$content = preg_replace('/(?<![\'"])#([0-9a-z])\\1([0-9a-z])\\2([0-9a-z])\\3(?![\'"])/i', '#$1$2$3', $content);
+
 		// save to path
 		if($path !== false) $this->save($content, $path);
 
@@ -582,21 +583,22 @@ class MinifyCSS extends Minify
 /**
 	 * Compiles less file into CSS
 	 *
-	 * @param string $source The less file to compile
+	 * @param string $content The less file to compile
 	 * @param string[optional] $path The path the data should be written to.
 	 * @return string
 	 */
-	protected function compileLess($source, $path = false)
+	protected function compileLess($content, $path = false)
 	{
 		// load the content
 		$content = $this->load($content);
 
 
 		// Create new Less Compiler object
-		$less = new lessc;
+		$less = new \lessc;
 
 		// Process Less
 		$content = $less->compile($content);
+	
 
 		// save to path
 		if($path !== false) $this->save($content, $path);
