@@ -36,7 +36,7 @@ class Assets {
 
     static public function collections()
     {
-    	debug(self::$collections);
+        debug(self::$collections);
     }
 
     /**
@@ -48,17 +48,17 @@ class Assets {
         // Configure paths, URLs
         if(! self::$init){
 
-        	// Set paths and urls
-        	self::setPaths();
+            // Set paths and urls
+            self::setPaths();
 
-	        // Set initialization to TRUE
-	        self::$init = true;
+            // Set initialization to TRUE
+            self::$init = true;
 
-	        // Setup inital collections
-	        self::$collections['css'] = new AssetCollection();
-	        self::$collections['js'] = new AssetCollection();
+            // Setup inital collections
+            self::$collections['css'] = new AssetCollection();
+            self::$collections['js'] = new AssetCollection();
 
-	    }
+        }
     }
 
     /**
@@ -122,33 +122,51 @@ class Assets {
      */
     public static function render($type)
     {
-    	// If $type is null, render both types
-    	if(! $type){ $type = array('css', 'js'); }
+        // If $type is null, render both types
+        if(! $type){ $type = array('css', 'js'); }
 
-    	// If $type is string, convert to array
-    	$types = is_string($type) ? array($type) : $type;
+        // If $type is string, convert to array
+        $types = is_string($type) ? array($type) : $type;
 
-    	$response = array();
+        $response = array();
 
-    	foreach($types as $type){
+        foreach($types as $type){
 
-	        $collection = self::$collections[$type];
+            $collection = self::$collections[$type];
 
-	    	$collection->load();
+            $collection->load();
 
-	        $compiler = new Assets\Compiler($collection, $type, self::$cache_path);
+            $compiler = new Assets\Compiler($collection, $type, self::$cache_path);
 
-	        $compiler->compile();
+            $compiler->compile();
 
-	        if (file_exists(self::$cache_path.$compiler->getCompiledName($type)))
-	        {
-	            $url = self::$cache_url.$compiler->getCompiledName();
-	            $html = new Assets\Html($type, $url);
-	            $response[] = $html->render();
-	        }
-    	}
-    	return implode(PHP_EOL, $response);
+            if (file_exists(self::$cache_path.$compiler->getCompiledName($type)))
+            {
+                $url = self::$cache_url.$compiler->getCompiledName();
+                $html = new Assets\Html($type, $url);
+                $response[] = $html->render();
+            }
+        }
+        return implode(PHP_EOL, $response);
     } 
+
+    /**
+     * Combines, minifies, and renders CSS file (returns HTML tags)
+     * @return string
+     */
+    public static function renderCss()
+    {
+        return self::render('css');
+    }   
+
+    /**
+     * Combines, minifies, and renders JS file (returns HTML tags)
+     * @return string
+     */
+    public static function renderJs()
+    {
+        return self::render('js');
+    }
 
     /**
      * Sets path to the assets directory
@@ -182,7 +200,7 @@ class Assets {
      */
     public static function getCompiledName($type)
     {
-    	$compiler = new Assets\Compiler(self::$collections[$type], self::$cache_path);
-        return self::$compiler->getCompiledName();
+        $compiler = new Assets\Compiler(self::$collections[$type], $type, self::$cache_path);
+        return $compiler->getCompiledName();
     }                   
 }

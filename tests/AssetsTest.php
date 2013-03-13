@@ -11,10 +11,10 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 		$assets->css(array('test.css', 'test2.css'));
 
 		// Does returned tag match expected output?
-		$this->assertTrue($assets->renderCss() == "<link rel=\"stylesheet\" href=\"/assets/cache/". $assets->getCompiledName('style') ."\">");
+		$this->assertTrue($assets->renderCss() == "<link rel=\"stylesheet\" href=\"/assets/cache/". $assets->getCompiledName('css') ."\">");
 
 		// Does file exist?
-		$filename = __DIR__.'/assets/cache/'. $assets->getCompiledName('style');
+		$filename = __DIR__.'/assets/cache/'. $assets->getCompiledName('css');
 		$this->assertTrue(file_exists($filename));
 		
 		// Delete file and remove assets object
@@ -30,10 +30,10 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 		$assets->js(array('plugins.js', 'functions.js'));
 
 		// Does returned tag match expected output?
-		$this->assertTrue($assets->renderJs() == "<script type=\"text/javascript\" src=\"/assets/cache/". $assets->getCompiledName('script') ."\"></script>");
+		$this->assertTrue($assets->renderJs() == "<script type=\"text/javascript\" src=\"/assets/cache/". $assets->getCompiledName('js') ."\"></script>");
 
 		// Does file exist?
-		$filename = __DIR__.'/assets/cache/'. $assets->getCompiledName('script');
+		$filename = __DIR__.'/assets/cache/'. $assets->getCompiledName('js');
 		$this->assertTrue(file_exists($filename));
 		
 		// Delete file and remove assets object
