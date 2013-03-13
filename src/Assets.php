@@ -4,7 +4,6 @@ use Assetic\Asset\Asset;
 use Assetic\Asset\FileAsset;
 use Assetic\Asset\AssetCollection;
 use Assetic\Filter\CssMinFilter;
-use Assetic\Filter\JSMinFilter;
 use Assetic\Filter\CssRewriteFilter;
 use Assetic\Filter\LessphpFilter;
 
@@ -35,12 +34,6 @@ class Assets {
      * Constructor
      */
     public function __construct(){}
-
-
-    static public function collections()
-    {
-        debug(self::$collections);
-    }
 
     /**
      * Initialize Library (Set paths/directories)
