@@ -35,7 +35,6 @@ class MinifyCSS extends Minify
 	const SHORTEN_HEX = 4;
 	const COMBINE_IMPORTS = 8;
 	const IMPORT_FILES = 16;
-	const COMPILE_LESS = 1;
 
 	/**
 	 * Files larger than this value (in kB) will not be imported into the CSS.
@@ -379,8 +378,7 @@ class MinifyCSS extends Minify
 			$content .= $css;
 		}
 
-		if($options & self::COMPILE_LESS) $content = $this->compileLess($content);
-		if($options & self::COMBINE_IMPORTS) $content = $this->combineImports($path, false, $content);		
+		if($options & self::COMBINE_IMPORTS) $content = $this->combineImports($path, false, $content);
 		if($options & self::SHORTEN_HEX) $content = $this->shortenHex($content);
 		if($options & self::IMPORT_FILES) $content = $this->importFiles($path, false, $content);
 		if($options & self::STRIP_COMMENTS) $content = $this->stripComments($content);
@@ -579,30 +577,4 @@ class MinifyCSS extends Minify
 
 		return $content;
 	}
-
-	/**
-	 * Compiles less file into CSS
-	 *
-	 * @param string $content The less file to compile
-	 * @param string[optional] $path The path the data should be written to.
-	 * @return string
-	 */
-	protected function compileLess($content, $path = false)
-	{
-		// load the content
-		$content = $this->load($content);
-
-
-		// Create new Less Compiler object
-		$less = new \Assets\Filter\Less;
-
-		// Process Less
-		$content = $less->compile($content);
-	
-
-		// save to path
-		if($path !== false) $this->save($content, $path);
-
-		return $content;
-	}	
 }
