@@ -32,6 +32,7 @@ class MinifyJS extends Minify
 {
 	const STRIP_COMMENTS = 1;
 	const STRIP_WHITESPACE = 2;
+	const COMPILE_COFFEESCRIPT = 1;
 
 	/**
 	 * Extract comments & strings from source code (and replace them with a placeholder)
@@ -158,6 +159,7 @@ class MinifyJS extends Minify
 		// extract comments & strings from content
 		list($content, $strings, $comments) = $this->extract($content);
 
+		if($options & self::COMPILE_COFFEESCRIPT) $content = $this->compileCoffee($content);
 		if($options & self::STRIP_COMMENTS) $content = $this->stripComments($content, false, $comments);
 		if($options & self::STRIP_WHITESPACE) $content = $this->stripWhitespace($content, false, $strings, $comments);
 
@@ -262,4 +264,25 @@ class MinifyJS extends Minify
 
 		return $content;
 	}
+
+	/**
+	 * Compiles coffeescript into JS
+	 *
+	 * @param string $content The coffeescript file to compile
+	 * @return string
+	 */
+	protected function compileCoffee($content)
+	{
+		// load the content
+		$content = $this->load($content);
+
+		// // Process coffeescript
+		// $content = $js = CoffeeScript\Compiler::compile($content);
+	
+
+		// save to path
+		if($path !== false) $this->save($content);
+
+		return $content;
+	}	
 }
