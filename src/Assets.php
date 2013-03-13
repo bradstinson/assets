@@ -154,7 +154,7 @@ class Assets {
             {
                 $url = self::$cache_url.$collection->getCompiledName($group);
                 $html = new Assets\Html($group, $extension, $url);
-                echo $html->render();
+                return $html->render();
             }
 
             // Spin through each of the assets for the particular group and store the raw HTML response.
@@ -192,5 +192,15 @@ class Assets {
     {
         // Set base_url
         self::$base_url = $base_url;
-    }               
+    }
+
+    /**
+     * Returns compiled filename
+     * @param  string  $base_url
+     * @return boolean
+     */
+    public static function getCompiledName($group)
+    {
+        return self::$collection->getCompiledName($group);
+    }                   
 }
