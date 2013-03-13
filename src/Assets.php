@@ -1,31 +1,29 @@
 <?php
 
+use Assets;
+use Assetic\Asset\Asset;
+use Assetic\Asset\FileAsset;
+use Assetic\Asset\AssetCollection;
+
 class Assets {
 
     // All assets go in here
-    protected static $collection;
+    protected static $collections;
 
-    // Is document HTML5?
-    protected static $HTML5         = true;
+    // All assets go in here
+    protected static $filters;    
 
     // Directories
-    protected static $assets_dir    = 'assets/';
-    protected static $css_dir       = 'css/';
-    protected static $js_dir        = 'js/';    
+    protected static $assets_dir    = 'assets/';  
     protected static $cache_dir     = 'cache/';
     
     // Paths
     protected static $assets_path;
-    protected static $css_path;
-    protected static $js_path;
     protected static $cache_path;
 
     // URLs
     protected static $base_url = '/assets/';
     protected static $cache_url;   
-
-    // Clear previous cache files
-    protected static $auto_clear_cache = true;
 
     // Has library been initialized?
     protected static $init = false;
@@ -35,19 +33,32 @@ class Assets {
      */
     public function __construct(){}
 
+
+    static public function collections()
+    {
+    	debug(self::$collections);
+    }
+
     /**
      * Initialize Library (Set paths/directories)
      */
     public static function init()
     {
+
         // Configure paths, URLs
-        if(! self::$init) self::setPaths();
+        if(! self::$init){
 
-        // Set initialization to TRUE
-        self::$init = true;
+        	// Set paths and urls
+        	self::setPaths();
 
-        // Setup inital collections
-        self::$collection = new Assets\Collection('global', 'assets/');
+	        // Set initialization to TRUE
+	        self::$init = true;
+
+	        // Setup inital collections
+	        self::$collections['css'] = new AssetCollection();
+	        self::$collections['js'] = new AssetCollection();
+
+	    }
     }
 
     /**
@@ -58,12 +69,8 @@ class Assets {
         // Set Assets Path
         if(! is_dir(self::$assets_dir)) throw new Assets\AssetsException('The provided directory "' . self::$assets_dir . '" does not exist.');
 
-        // Set paths
-        self::$css_path     = self::$assets_dir.self::$css_dir;
-        self::$js_path      = self::$assets_dir.self::$js_dir;
+        // Set cache path and url
         self::$cache_path   = self::$assets_dir.self::$cache_dir;
-
-        // Set URLs
         self::$cache_url    = self::$base_url.self::$cache_dir;
     }        
 
@@ -72,10 +79,10 @@ class Assets {
      * @param  string  $files
      * @return boolean
      */
-    public static function css($files='')
+    public static function css($files)
     {
         self::init();
-        return self::addAssets($files, 'css');
+        return self::add($files, 'css');
     }
 
     /**
@@ -83,10 +90,10 @@ class Assets {
      * @param  string  $files
      * @return boolean
      */
-    public static function js($files='')
+    public static function js($files)
     {
         self::init();
-        return self::addAssets($files, 'js');
+        return self::add($files, 'js');
     }    
 
     /**
@@ -95,79 +102,52 @@ class Assets {
      * @param  string  $type     
      * @return boolean
      */
-    protected static function addAssets($files='', $type='')
+    protected static function add($files, $type)
     {
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
 
         // Get path
-        if ($type === 'css') $path = self::$assets_dir.self::$css_dir;
-        elseif ($type === 'js') $path = self::$assets_dir.self::$js_dir;
+        $path = self::$assets_dir.$type.'/';
 
         // Load each asset, if file exists
         foreach($files as $file){
-            // If file exists, add to array for processing
-            if(! file_exists($path.$file)) throw new Assets\AssetsException('The following file "' . $path . $file . '" could not be found.');
-            
-            // Add file to list of assets
-            self::$collection->add($path.$file);
+            self::$collections[$type]->add(new FileAsset($path.$file));
         }
-        return TRUE;
     }    
-
-    /**
-     * Combines, minifies, and renders CSS file (returns HTML tags)
-     * @return string
-     */
-    public static function renderCss()
-    {
-        return self::render('global.css');
-    }   
-
-    /**
-     * Combines, minifies, and renders JS file (returns HTML tags)
-     * @return string
-     */
-    public static function renderJs()
-    {
-        return self::render('global.js');
-    }
 
     /**
      * Renders CSS/JS files (returns HTML tags)
      * @return string
      */
-    public static function render($collection='')
+    public static function render($type)
     {
-        list($collection, $extension) = explode('.', $collection);        
+    	// If $type is null, render both types
+    	if(! $type){ $type = array('css', 'js'); }
 
-        $collection = self::$collection;
+    	// If $type is string, convert to array
+    	$types = is_string($type) ? array($type) : $type;
 
-        $compiler = new Assets\CollectionCompiler(self::$cache_path);
+    	$response = array();
 
-        $compiler->compile($collection);
+    	foreach($types as $type){
 
-        $groups = $collection->getAssets();
+	        $collection = self::$collections[$type];
 
-        foreach ($groups as $group => $assets)
-        {
-            if (file_exists(self::$cache_path.$collection->getCompiledName($group)))
-            {
-                $url = self::$cache_url.$collection->getCompiledName($group);
-                $html = new Assets\Html($group, $extension, $url);
-                return $html->render();
-            }
+	    	$collection->load();
 
-            // Spin through each of the assets for the particular group and store the raw HTML response.
-            $response = array();
-        
-            foreach ($assets as $asset)
-            {
-                $response[] = new Assets\Html($asset->getGroup(), $asset->getExtension(), '');
-            }
+	        $compiler = new Assets\Compiler($collection, $type, self::$cache_path);
 
-            return implode(PHP_EOL, $response);
-        }
+	        $compiler->compile();
+
+	        if (file_exists(self::$cache_path.$compiler->getCompiledName($type)))
+	        {
+	            $url = self::$cache_url.$compiler->getCompiledName();
+	            $html = new Assets\Html($type, $url);
+	            $response[] = $html->render();
+	        }
+    	}
+    	return implode(PHP_EOL, $response);
     } 
 
     /**
@@ -178,7 +158,7 @@ class Assets {
     public static function setPath($path='')
     {
         // Directory Exist?
-        if(! is_dir($path)) throw new AssetsException('The provided directory "' . $path . '" does not exist.');
+        if(! is_dir($path)) throw new Assets\AssetsException('The provided directory "' . $path . '" does not exist.');
 
         // Set path
         self::$assets_dir = $path;
@@ -200,8 +180,9 @@ class Assets {
      * @param  string  $base_url
      * @return boolean
      */
-    public static function getCompiledName($group)
+    public static function getCompiledName($type)
     {
-        return self::$collection->getCompiledName($group);
+    	$compiler = new Assets\Compiler(self::$collections[$type], self::$cache_path);
+        return self::$compiler->getCompiledName();
     }                   
 }
