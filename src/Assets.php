@@ -121,7 +121,7 @@ class Assets {
      */
     public static function renderCss()
     {
-        return self::render();
+        return self::render('global.css');
     }   
 
     /**
@@ -130,15 +130,16 @@ class Assets {
      */
     public static function renderJs()
     {
-        return self::render();
+        return self::render('global.js');
     }
 
     /**
      * Renders CSS/JS files (returns HTML tags)
      * @return string
      */
-    public static function render()
+    public static function render($collection='')
     {
+        list($collection, $extension) = explode('.', $collection);        
 
         $collection = self::$collection;
 
