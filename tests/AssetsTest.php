@@ -1,17 +1,8 @@
 <?php
 
-require_once('src/Assets.php');
-require_once('src/Asset/AssetInterface.php');
-require_once('src/Asset/Asset.php');
-require_once('src/AssetsException.php');
-require_once('src/Collection.php');
-require_once('src/CollectionCompiler.php');
-require_once('src/Html.php');
-
-
-
 class AssetsTest extends PHPUnit_Framework_TestCase {
 	
+
 	public function testRenderCss()
 	{
 		// Set path and add files for processing

@@ -60,7 +60,7 @@ class Collection {
     public function add($filename){
 
         // Raise error if file not found
-        if(! file_exists($directory.$filename)) throw new AssetsException('The following file "' . $directory.$filename . '" could not be found.');
+        if(! file_exists($filename)) throw new AssetsException('The following file "' . $filename . '" could not be found.');
 
         // Create new asset obeject
         $asset = new Asset($filename);
