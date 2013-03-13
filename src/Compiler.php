@@ -58,7 +58,7 @@ class Compiler {
 		
 		// If compiled file doesn't exist yet or an asset file has been changed since file was
 		// originally compiled, create new file
-		if (! file_exists($path) && filemtime($path) < $this->collection->getLastModified() && ! $force)
+		if (! file_exists($path) && @filemtime($path) < $this->collection->getLastModified() && ! $force)
 		{
 			file_put_contents($path, $this->collection->dump(), LOCK_EX);
 		}

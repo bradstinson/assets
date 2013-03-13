@@ -1,6 +1,5 @@
 <?php
 
-use Assets;
 use Assetic\Asset\Asset;
 use Assetic\Asset\FileAsset;
 use Assetic\Asset\AssetCollection;
