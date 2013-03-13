@@ -9,6 +9,7 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 		$assets = new Assets();
 		$assets->setPath(__DIR__.'/assets/');
 		$assets->css(array('test.css', 'test2.css'));
+		$assets->less(array('test.less'));
 
 		// Does returned tag match expected output?
 		$this->assertTrue($assets->renderCss() == "<link rel=\"stylesheet\" href=\"/assets/cache/". $assets->getCompiledName('css') ."\">");

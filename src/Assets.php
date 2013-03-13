@@ -3,6 +3,10 @@
 use Assetic\Asset\Asset;
 use Assetic\Asset\FileAsset;
 use Assetic\Asset\AssetCollection;
+use Assetic\Filter\CssMinFilter;
+use Assetic\Filter\JSMinFilter;
+use Assetic\Filter\CssRewriteFilter;
+use Assetic\Filter\LessphpFilter;
 
 class Assets {
 
@@ -54,9 +58,12 @@ class Assets {
             self::$init = true;
 
             // Setup inital collections
-            self::$collections['css'] = new AssetCollection();
-            self::$collections['js'] = new AssetCollection();
+            self::$filters['css'] = array(new CssMinFilter(), new CssRewriteFilter());
+            self::$filters['js'] = array();
 
+            // Setup inital collections
+            self::$collections['css'] = new AssetCollection(array(), self::$filters['css']);
+            self::$collections['js'] = new AssetCollection(array(), self::$filters['js']);
         }
     }
 
@@ -85,6 +92,17 @@ class Assets {
     }
 
     /**
+     * Adds a Less file to be rendered
+     * @param  string  $files
+     * @return boolean
+     */
+    public static function less($files)
+    {
+        self::init();
+        return self::add($files, 'css', array(new LessphpFilter));
+    }    
+
+    /**
      * Adds a JS file to be rendered
      * @param  string  $files
      * @return boolean
@@ -101,17 +119,18 @@ class Assets {
      * @param  string  $type     
      * @return boolean
      */
-    protected static function add($files, $type)
+    protected static function add($files, $type, $filters=array())
     {
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
 
+        // If filter provided, 
         // Get path
         $path = self::$assets_dir.$type.'/';
 
         // Load each asset, if file exists
         foreach($files as $file){
-            self::$collections[$type]->add(new FileAsset($path.$file));
+            self::$collections[$type]->add(new FileAsset($path.$file, $filters));
         }
     }    
 

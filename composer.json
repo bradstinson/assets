@@ -14,7 +14,9 @@
 	],
     "require": {
         "php": ">=5.3.0",
-		"kriswallsmith/assetic": "1.*"        
+		"kriswallsmith/assetic": "1.*",
+		"natxet/CssMin": "dev-master",
+        "leafo/lessphp": "v0.3.9"
     },
     "autoload": {
         "classmap": ["src/"]
