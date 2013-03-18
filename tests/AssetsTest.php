@@ -9,7 +9,7 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 		$assets = new Assets();
 		$assets->setPath(__DIR__.'/assets/');
 		$assets->css(array('test.css', 'test2.css'));
-		$assets->less(array('test.less'));
+		$assets->less('test.less');
 
 		// Does returned tag match expected output?
 		$this->assertTrue($assets->renderCss() == "<link rel=\"stylesheet\" href=\"/assets/cache/". $assets->getCompiledName('css') ."\">");
@@ -29,6 +29,7 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 		$assets = new Assets();
 		$assets->setPath(__DIR__.'/assets/');
 		$assets->js(array('plugins.js', 'functions.js'));
+		$assets->coffee('test.coffee');
 
 		// Does returned tag match expected output?
 		$this->assertTrue($assets->renderJs() == "<script type=\"text/javascript\" src=\"/assets/cache/". $assets->getCompiledName('js') ."\"></script>");

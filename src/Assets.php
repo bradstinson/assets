@@ -6,6 +6,7 @@ use Assetic\Asset\AssetCollection;
 use Assetic\Filter\CssMinFilter;
 use Assetic\Filter\CssRewriteFilter;
 use Assetic\Filter\LessphpFilter;
+use Assets\Filter\CoffeeScriptFilter;
 
 class Assets {
 
@@ -107,6 +108,17 @@ class Assets {
     }    
 
     /**
+     * Adds a coffeescript file to be rendered
+     * @param  string  $files
+     * @return boolean
+     */
+    public static function coffee($files)
+    {
+        self::init();
+        return self::add($files, 'js', array(new CoffeeScriptFilter));
+    }  
+
+    /**
      * Add assets to be rendered
      * @param  string  $files
      * @param  string  $type     
@@ -117,7 +129,6 @@ class Assets {
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
 
-        // If filter provided, 
         // Get path
         $path = self::$assets_dir.$type.'/';
 
