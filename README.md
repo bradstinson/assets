@@ -38,6 +38,22 @@ Returns something like:
 */
 ```
 
+### LESS
+
+Less files can be added using the following command, where "file1.less" is the Less file you want to compile, and is located at assets/css/file1.less.
+
+```php
+Assets::less('file1.less');
+```
+
+You may also submit multiple files as an array. 
+
+```php
+Assets::css(array('file1.less', 'file2.less'));
+```
+
+Your Less files will be automatically compiled and combined with your CSS files into a single file (which is written to 'assets/cache' directory). The proper tags will then be returned.
+
 ### JS
 
 Javascript files can be added using the following command, where "file1.js" and "file2.js" are the javascript files you want to include,
@@ -64,7 +80,24 @@ Returns something like:
 <script src="/assets/cache/9cf2803d8f075cb7d1ad31940738f35e.js"></script>
 */
 ```
-If you like to generate the CSS and JS tags together, you can call:
+
+### CoffeeScript
+
+CoffeeScript files can be added using the following command, where "file1.coffee" is the CoffeeScript file you want to compile, and is located at assets/js/file1.coffee.
+
+```php
+Assets::coffee('file1.coffee');
+```
+
+You may also submit multiple files as an array. 
+
+```php
+Assets::coffee(array('file1.coffee', 'file2.coffee'));
+```
+
+Your CoffeeScript files will be automatically compiled and combined with your JS files into a single file (which is written to 'assets/cache' directory). The proper tags will then be returned.
+
+If you would like to generate the CSS and JS tags together, you can call:
 ```php
 echo Assets::render();
 /*
@@ -99,13 +132,6 @@ Assets::setPath('public/assets/'));
 Assets::setBaseurl('/'));
 ```
 
-### HTML5
-By default, the library will return tags for HTML5. However, you can have it generate regular HTML tags by using the following function:
-
-```php
-Assets::html5(FALSE));
-```
-
 Groups
 ------
 
@@ -115,14 +141,17 @@ requests are made, this may be added in a future version.
 Thanks
 ------
 
-This asset library was inspired and uses components from the following libraries:
+This asset library was inspired by and uses components from the following libraries:
 
  - [Assets](https://github.com/bstrahija/assets)
- - [Minify](https://github.com/matthiasmullie/minify)
- - [fuelphp-casset](https://github.com/canton7/fuelphp-casset)
+ - [Assetic](https://github.com/kriswallsmith/assetic)
+ - [Basset](https://github.com/jasonlewis/basset)
+ - [CssMin](https://github.com/natxet/CssMin) 
+ - [LessPHP](https://github.com/leafo/lessphp)
+ - [CoffeeScript PHP](https://github.com/alxlit/coffeescript-php)
 
 
 Contributing
 ------------
 
-If you've got any issues/complaints/suggestions, please tell me and I'll do my best!
+If you have any issues/complaints/suggestions, let me know and I will see if I can implement them as time permits. Also, pull requests are also welcome.

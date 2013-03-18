@@ -55,7 +55,7 @@ class Assets {
             self::$filters['css'] = array(new CssMinFilter(), new CssRewriteFilter());
             self::$filters['js'] = array();
 
-            // Setup inital collections
+            // Re-setup inital collections
             self::$collections['css'] = new AssetCollection(array(), self::$filters['css']);
             self::$collections['js'] = new AssetCollection(array(), self::$filters['js']);
         }
@@ -224,5 +224,15 @@ class Assets {
     {
         $compiler = new Assets\Compiler(self::$collections[$type], $type, self::$cache_path);
         return $compiler->getCompiledName();
-    }                   
+    }
+
+    /**
+     * Reinitializes Assets object (removes all files from collections)
+     * @return boolean
+     */
+    public static function reset()
+    {
+        self::$init = false;
+        self::init();
+    } 
 }
