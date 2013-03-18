@@ -100,7 +100,7 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 		Assets::reset();
 
 		// Delete cached file and destroy filename variable
-		unlink($this->filename);
+		@ unlink($this->filename);
 		unset($this->filename);
 	}	
 }
