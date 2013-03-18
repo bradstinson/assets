@@ -1,33 +1,32 @@
 <?php
 
+use Assetic\Asset\Asset;
+use Assetic\Asset\FileAsset;
+use Assetic\Asset\AssetCollection;
+use Assetic\Filter\CssMinFilter;
+use Assetic\Filter\CssRewriteFilter;
+use Assetic\Filter\LessphpFilter;
+use Assets\Filter\CoffeeScriptFilter;
+
 class Assets {
 
     // All assets go in here
-    protected static $assets       = array('js' => array(), 'css' => array());
+    protected static $collections;
 
-    // Is document HTML5?
-    protected static $HTML5        = true;
+    // All assets go in here
+    protected static $filters;    
 
     // Directories
-    protected static $assets_dir   = 'assets/';
-    protected static $css_dir      = 'css/';
-    protected static $js_dir       = 'js/';
-    protected static $cache_dir    = 'cache/';
+    protected static $assets_dir    = 'assets/';  
+    protected static $cache_dir     = 'cache/';
     
     // Paths
     protected static $assets_path;
-    protected static $css_path;
-    protected static $js_path;
     protected static $cache_path;
 
     // URLs
     protected static $base_url = '/assets/';
-    protected static $css_url;
-    protected static $js_url;
     protected static $cache_url;   
-
-    // Clear previous cache files
-    protected static $auto_clear_cache = true;
 
     // Has library been initialized?
     protected static $init = false;
@@ -42,11 +41,24 @@ class Assets {
      */
     public static function init()
     {
-        // Configure paths, URLs
-        if(! self::$init) self::setPaths();
 
-        // Set initialization to TRUE
-        self::$init = true;
+        // Configure paths, URLs
+        if(! self::$init){
+
+            // Set paths and urls
+            self::setPaths();
+
+            // Set initialization to TRUE
+            self::$init = true;
+
+            // Setup inital collections
+            self::$filters['css'] = array(new CssMinFilter(), new CssRewriteFilter());
+            self::$filters['js'] = array();
+
+            // Re-setup inital collections
+            self::$collections['css'] = new AssetCollection(array(), self::$filters['css']);
+            self::$collections['js'] = new AssetCollection(array(), self::$filters['js']);
+        }
     }
 
     /**
@@ -55,16 +67,10 @@ class Assets {
     public static function setPaths()
     {
         // Set Assets Path
-        if(! is_dir(self::$assets_dir)) throw new AssetsException('The provided directory "' . self::$assets_dir . '" does not exist.');
+        if(! is_dir(self::$assets_dir)) throw new Assets\AssetsException('The provided directory "' . self::$assets_dir . '" does not exist.');
 
-        // Set paths
-        self::$css_path     = self::$assets_dir.self::$css_dir;
-        self::$js_path      = self::$assets_dir.self::$js_dir;
+        // Set cache path and url
         self::$cache_path   = self::$assets_dir.self::$cache_dir;
-
-        // Set URLs           
-        self::$css_url      = self::$base_url.self::$css_dir;
-        self::$js_url       = self::$base_url.self::$js_dir;
         self::$cache_url    = self::$base_url.self::$cache_dir;
     }        
 
@@ -73,22 +79,44 @@ class Assets {
      * @param  string  $files
      * @return boolean
      */
-    public static function css($files='')
+    public static function css($files)
     {
         self::init();
-        return self::addAssets($files, 'css');
+        return self::add($files, 'css');
     }
+
+    /**
+     * Adds a Less file to be rendered
+     * @param  string  $files
+     * @return boolean
+     */
+    public static function less($files)
+    {
+        self::init();
+        return self::add($files, 'css', array(new LessphpFilter));
+    }    
 
     /**
      * Adds a JS file to be rendered
      * @param  string  $files
      * @return boolean
      */
-    public static function js($files='')
+    public static function js($files)
     {
         self::init();
-        return self::addAssets($files, 'js');
-    }
+        return self::add($files, 'js');
+    }    
+
+    /**
+     * Adds a coffeescript file to be rendered
+     * @param  string  $files
+     * @return boolean
+     */
+    public static function coffee($files)
+    {
+        self::init();
+        return self::add($files, 'js', array(new CoffeeScriptFilter));
+    }  
 
     /**
      * Add assets to be rendered
@@ -96,27 +124,53 @@ class Assets {
      * @param  string  $type     
      * @return boolean
      */
-    protected static function addAssets($files='', $type='')
+    protected static function add($files, $type, $filters=array())
     {
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
 
         // Get path
-        if ($type === 'css') $path = self::$assets_dir.self::$css_dir;
-        elseif ($type === 'js') $path = self::$assets_dir.self::$js_dir;
+        $path = self::$assets_dir.$type.'/';
 
         // Load each asset, if file exists
         foreach($files as $file){
-            
-            // If file exists, add to array for processing
-            if(! file_exists($path . $file)) throw new AssetsException('The following file "' . $path . $file . '" could not be found.');
-            
-            // Add file to list of assets            
-            self::$assets[$type][] = $file;
+            self::$collections[$type]->add(new FileAsset($path.$file, $filters));
         }
-
-        return TRUE;
     }    
+
+    /**
+     * Renders CSS/JS files (returns HTML tags)
+     * @return string
+     */
+    public static function render($type)
+    {
+        // If $type is null, render both types
+        if(! $type){ $type = array('css', 'js'); }
+
+        // If $type is string, convert to array
+        $types = is_string($type) ? array($type) : $type;
+
+        $response = array();
+
+        foreach($types as $type){
+
+            $collection = self::$collections[$type];
+
+            $collection->load();
+
+            $compiler = new Assets\Compiler($collection, $type, self::$cache_path);
+
+            $compiler->compile();
+
+            if (file_exists(self::$cache_path.$compiler->getCompiledName($type)))
+            {
+                $url = self::$cache_url.$compiler->getCompiledName();
+                $html = new Assets\Html($type, $url);
+                $response[] = $html->render();
+            }
+        }
+        return implode(PHP_EOL, $response);
+    } 
 
     /**
      * Combines, minifies, and renders CSS file (returns HTML tags)
@@ -124,7 +178,7 @@ class Assets {
      */
     public static function renderCss()
     {
-        return self::renderAssets('css');
+        return self::render('css');
     }   
 
     /**
@@ -133,144 +187,8 @@ class Assets {
      */
     public static function renderJs()
     {
-        return self::renderAssets('js');
+        return self::render('js');
     }
-
-    /**
-     * Combines, minifies, and renders asset file (returns HTML tags)
-     * @param  string  $type
-     * @return string
-     */
-    protected static function renderAssets($type='')
-    {
-        if(is_array(self::$assets[$type]) && count(self::$assets[$type])) {
-
-            // Get path
-            if ($type === 'css') $path = self::$css_path;
-            elseif ($type === 'js') $path = self::$js_path;
-            
-            // Create cached filename
-            $cached_filename = self::generateCacheFilename($type);
-
-            // If cached file doesn't already exist
-            if(! file_exists($cached_filename)){
-
-                // Create cache directory if it does not exist
-                if (!is_dir(self::$cache_path)) mkdir(self::$cache_path);
-
-                // Find latest modified date from list of assets
-                $last_modified = self::lastModified(self::$assets[$type], $type);
-            
-                // Create Minify Object
-                if ($type === 'css') $asset = new Assets\Minify\MinifyCSS();
-                elseif ($type === 'js') $asset = new Assets\Minify\MinifyJS();                
-
-                // Clear all existing cache files (if set)
-                if(self::$auto_clear_cache){self::autoClearCache($type);}
-
-                // Combine, minify assets into new cached file
-                foreach(self::$assets[$type] as $file){
-                    $asset->add($path.$file);
-                }
-                $asset->minify(self::$cache_path.$cached_filename);
-            }
-    
-            // Return HTML tags
-            return self::generateTag($cached_filename, $type);
-        }
-    }
-
-    /**
-     * Renders CSS/JS files (returns HTML tags)
-     * @return string
-     */
-    public static function render()
-    {
-        $tag = self::renderCss();
-        $tag .= self::renderJs();
-        return $tag;
-    }
-
-    /**
-     * Display an HTML tag
-     * @param  string  $file
-     * @param  string  $type
-     * @return string
-     */
-    protected static function generateTag($file = null, $type = null, $attributes = '')
-    {
-        if($type === 'css') {
-            if(self::$HTML5) {
-                $tag = '<link rel="stylesheet" href="'.self::$cache_url.$file.'"'.$attributes.'>'.PHP_EOL;
-            } else {
-                $tag = '<link type="text/css" href="'.self::$cache_url.$file.'"'.$attributes.' />'.PHP_EOL;
-            }
-        } elseif($type === 'js') {
-            if (self::$HTML5) {
-                $tag = '<script src="'.self::$cache_url.$file.'"'.$attributes.'></script>'.PHP_EOL; 
-            } else {
-                $tag = '<script src="'.self::$cache_url.$file.'" type="text/javascript"'.$attributes.'></script>'.PHP_EOL;
-            }
-        }
-
-        return $tag;
-    }
-
-    /**
-     * Finds the last modified time for an array of files
-     * @param  array   $files
-     * @param  string  $type
-     * @return string
-     */
-    protected static function lastModified($files = null, $type='')
-    {
-        $last_modified = 0;
-
-        // Get path
-        if ($type === 'css') $path = self::$css_path;
-        elseif ($type === 'js') $path = self::$js_path;
-
-        foreach($files as $file){
-            $filename = $path.$file;
-            $last_modified = (filemtime($filename) > $last_modified) ? filemtime($filename) : $last_modified; 
-        }
-
-        return date('YmdHis', $last_modified);
-    }
-
-    /**
-     * If flagged, auto clear JS/CSS files from cache
-     * @param  string  $type     
-     * @return boolean
-     */
-    protected static function autoClearCache($type='')
-    {
-        // Find list of all files in cache path
-        $files = scandir(self::$cache_path);
-
-        foreach($files as $file){
-
-            $file_info = pathinfo(self::$cache_path.$file);
-
-            if ($file_info['extension'] == $type)
-            {
-                unlink(self::$cache_path.$file);
-            }
-        }
-    }
-
-    /**
-     * Generate filename of rendered asset
-     * @return string
-     */
-    public static function generateCacheFilename($type='')
-    {
-        // Find latest modified date from list of assets
-        $last_modified = self::lastModified(self::$assets[$type], $type);
-        
-        // Create cached filename
-        return md5(implode('', self::$assets[$type]).$last_modified).'.'.$type;
-    }    
 
     /**
      * Sets path to the assets directory
@@ -280,7 +198,7 @@ class Assets {
     public static function setPath($path='')
     {
         // Directory Exist?
-        if(! is_dir($path)) throw new AssetsException('The provided directory "' . $path . '" does not exist.');
+        if(! is_dir($path)) throw new Assets\AssetsException('The provided directory "' . $path . '" does not exist.');
 
         // Set path
         self::$assets_dir = $path;
@@ -298,13 +216,23 @@ class Assets {
     }
 
     /**
-     * Sets HTML5 variable
-     * @param  string  $html5
+     * Returns compiled filename
+     * @param  string  $base_url
      * @return boolean
      */
-    public static function html5($html5=TRUE)
+    public static function getCompiledName($type)
     {
-        // Set HTML5
-        self::$HTML5 = $html5;
-    }               
+        $compiler = new Assets\Compiler(self::$collections[$type], $type, self::$cache_path);
+        return $compiler->getCompiledName();
+    }
+
+    /**
+     * Reinitializes Assets object (removes all files from collections)
+     * @return boolean
+     */
+    public static function reset()
+    {
+        self::$init = false;
+        self::init();
+    } 
 }
