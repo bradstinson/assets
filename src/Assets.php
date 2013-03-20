@@ -1,32 +1,34 @@
 <?php
 
+use Assets\Filesystem;
+use Assets\Filter\Filter;
+use Assets\Path;
 use Assetic\Asset\Asset;
 use Assetic\Asset\FileAsset;
 use Assetic\Asset\AssetCollection;
-use Assetic\Filter\CssMinFilter;
-use Assetic\Filter\CssRewriteFilter;
-use Assetic\Filter\LessphpFilter;
-use Assets\Filter\CoffeeScriptFilter;
 
 class Assets {
 
     // All assets go in here
     protected static $collections;
 
-    // All assets go in here
-    protected static $filters;    
+    // All filters go in here
+    protected static $filters = array(
+                    'style' => array(),
+                    'script' => array()
+    );    
 
-    // Directories
-    protected static $assets_dir    = 'assets/';  
-    protected static $cache_dir     = 'cache/';
+    // Accepted file extensions and their corresponding collection
+    protected static $extensions = array(
+                    'css' => 'style',
+                    'less' => 'style',
+                    'js' => 'script',
+                    'coffee' => 'script'
+    );
     
-    // Paths
-    protected static $assets_path;
-    protected static $cache_path;
-
-    // URLs
-    protected static $base_url = '/assets/';
-    protected static $cache_url;   
+    // Paths and URL storage variable
+    protected static $assetPath;
+    protected static $paths;
 
     // Has library been initialized?
     protected static $init = false;
@@ -41,82 +43,25 @@ class Assets {
      */
     public static function init()
     {
-
-        // Configure paths, URLs
+        // If not already done, initialize
         if(! self::$init){
-
-            // Set paths and urls
-            self::setPaths();
+            
+            // Set paths
+            self::$paths = new Path(self::$assetPath);
 
             // Set initialization to TRUE
             self::$init = true;
 
-            // Setup inital collections
-            self::$filters['css'] = array(new CssMinFilter(), new CssRewriteFilter());
-            self::$filters['js'] = array();
+            // Setup inital filters for collections
+            // self::$filters['style'] = array();
+            self::$filters['style'] = array(Filter::add('CssMinFilter'), Filter::add('CssRewriteFilter'));
+            self::$filters['script'] = array();
 
             // Re-setup inital collections
-            self::$collections['css'] = new AssetCollection(array(), self::$filters['css']);
-            self::$collections['js'] = new AssetCollection(array(), self::$filters['js']);
+            self::$collections['style'] = new AssetCollection(array(), self::$filters['style']);
+            self::$collections['script'] = new AssetCollection(array(), self::$filters['script']);
         }
-    }
-
-    /**
-     * Set paths and urls for future processing
-     */
-    public static function setPaths()
-    {
-        // Set Assets Path
-        if(! is_dir(self::$assets_dir)) throw new Assets\AssetsException('The provided directory "' . self::$assets_dir . '" does not exist.');
-
-        // Set cache path and url
-        self::$cache_path   = self::$assets_dir.self::$cache_dir;
-        self::$cache_url    = self::$base_url.self::$cache_dir;
-    }        
-
-    /**
-     * Adds a CSS file to be rendered
-     * @param  string  $files
-     * @return boolean
-     */
-    public static function css($files)
-    {
-        self::init();
-        return self::add($files, 'css');
-    }
-
-    /**
-     * Adds a Less file to be rendered
-     * @param  string  $files
-     * @return boolean
-     */
-    public static function less($files)
-    {
-        self::init();
-        return self::add($files, 'css', array(new LessphpFilter));
-    }    
-
-    /**
-     * Adds a JS file to be rendered
-     * @param  string  $files
-     * @return boolean
-     */
-    public static function js($files)
-    {
-        self::init();
-        return self::add($files, 'js');
-    }    
-
-    /**
-     * Adds a coffeescript file to be rendered
-     * @param  string  $files
-     * @return boolean
-     */
-    public static function coffee($files)
-    {
-        self::init();
-        return self::add($files, 'js', array(new CoffeeScriptFilter));
-    }  
+    }         
 
     /**
      * Add assets to be rendered
@@ -124,28 +69,39 @@ class Assets {
      * @param  string  $type     
      * @return boolean
      */
-    protected static function add($files, $type, $filters=array())
+    public static function add($files)
     {
+        // If needed, initalize
+        self::init();
+
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
-
-        // Get path
-        $path = self::$assets_dir.$type.'/';
+    
+        $path = self::$paths->get('assets');
 
         // Load each asset, if file exists
         foreach($files as $file){
-            self::$collections[$type]->add(new FileAsset($path.$file, $filters));
+
+            $filepath = $path.$file;
+            $extension = Filesystem::extension($filepath);
+
+            // If file is Less or Coffeescript, apply required filter
+            if ($extension == 'less') $filters = array(Filter::add('LessphpFilter'));
+            elseif ($extension == 'coffee') $filters = array(Filter::add('CoffeeScriptFilter'));
+            else $filters = array();
+
+            self::$collections[self::$extensions[$extension]]->add(new FileAsset($filepath, $filters));
         }
     }    
 
     /**
-     * Renders CSS/JS files (returns HTML tags)
+     * Compiles CSS/JS files (returns HTML tags)
      * @return string
      */
-    public static function render($type)
+    public static function render($type='')
     {
         // If $type is null, render both types
-        if(! $type){ $type = array('css', 'js'); }
+        if(! $type){ $type = array('style', 'script'); }
 
         // If $type is string, convert to array
         $types = is_string($type) ? array($type) : $type;
@@ -158,13 +114,13 @@ class Assets {
 
             $collection->load();
 
-            $compiler = new Assets\Compiler($collection, $type, self::$cache_path);
+            $compiler = new Assets\Compiler($collection, $type, self::$paths->get('cache'));
 
             $compiler->compile();
 
-            if (file_exists(self::$cache_path.$compiler->getCompiledName($type)))
+            if (Filesystem::exists(self::$paths->get('cache').$compiler->getCompiledName($type)))
             {
-                $url = self::$cache_url.$compiler->getCompiledName();
+                $url = self::$paths->get('cacheUrl').$compiler->getCompiledName();
                 $html = new Assets\Html($type, $url);
                 $response[] = $html->render();
             }
@@ -176,18 +132,18 @@ class Assets {
      * Combines, minifies, and renders CSS file (returns HTML tags)
      * @return string
      */
-    public static function renderCss()
+    public static function styles()
     {
-        return self::render('css');
+        return self::render('style');
     }   
 
     /**
      * Combines, minifies, and renders JS file (returns HTML tags)
      * @return string
      */
-    public static function renderJs()
+    public static function scripts()
     {
-        return self::render('js');
+        return self::render('script');
     }
 
     /**
@@ -197,32 +153,35 @@ class Assets {
      */
     public static function setPath($path='')
     {
-        // Directory Exist?
-        if(! is_dir($path)) throw new Assets\AssetsException('The provided directory "' . $path . '" does not exist.');
-
         // Set path
-        self::$assets_dir = $path;
+        self::$assetPath = $path;
+
+        // Directory Exist?
+        if(! Filesystem::isDirectory(self::$assetPath)) throw new Assets\AssetsException('The provided directory "' . self::$assetPath . '" does not exist.');
     }      
 
     /**
-     * Sets base_url
-     * @param  string  $base_url
+     * Sets baseUrl
+     * @param  string  $baseUrl
      * @return boolean
      */
-    public static function setBaseurl($base_url='/assets/')
+    public static function setBaseUrl($baseUrl='')
     {
-        // Set base_url
-        self::$base_url = $base_url;
+        // Set baseUrl
+        self::$paths->set('baseUrl', $baseUrl);
+
+        // Set baseUrl
+        self::$paths->set('cacheUrl', self::$paths->get('baseUrl').self::$paths->get('cache'));
     }
 
     /**
      * Returns compiled filename
-     * @param  string  $base_url
+     * @param  string  $type
      * @return boolean
      */
     public static function getCompiledName($type)
     {
-        $compiler = new Assets\Compiler(self::$collections[$type], $type, self::$cache_path);
+        $compiler = new Assets\Compiler(self::$collections[self::$extensions[$type]], $type, self::$paths->get('cachePath'));
         return $compiler->getCompiledName();
     }
 

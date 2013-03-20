@@ -1,5 +1,6 @@
 <?php namespace Assets;
 
+use Assets\Filesystem;
 use Assetic\Asset\AssetCollection;
 
 class Compiler {
@@ -35,7 +36,7 @@ class Compiler {
 	public function __construct(AssetCollection $collection, $type, $compilePath)
 	{
 		$this->collection = $collection;
-		$this->type = $type;				
+		$this->type = ($type == 'style' ? 'css' : 'js');
 		$this->compilePath = $compilePath;
 	}
 
@@ -48,9 +49,9 @@ class Compiler {
 	public function compile($force = false)
 	{
 		// If the compile path does not exist, attempt to create it.
-		if ( ! file_exists($this->compilePath))
+		if ( ! Filesystem::exists($this->compilePath))
 		{
-			mkdir($this->compilePath, 0777, false);
+			Filesystem::makeDirectory($this->compilePath);
 		}
 
 		// Filename for compiled file
@@ -58,9 +59,9 @@ class Compiler {
 		
 		// If compiled file doesn't exist yet or an asset file has been changed since file was
 		// originally compiled, create new file
-		if (! file_exists($path) && @filemtime($path) < $this->collection->getLastModified() && ! $force)
+		if (! Filesystem::exists($path) && @Filesystem::lastModified($path) < $this->collection->getLastModified() && ! $force)
 		{
-			file_put_contents($path, $this->collection->dump(), LOCK_EX);
+			Filesystem::put($path, $this->collection->dump());
 		}
 	}
 

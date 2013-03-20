@@ -47,13 +47,13 @@ class Html {
 		switch ($this->type)
 		{
 			// Generate the HTML link tag for stylesheets.
-			case 'css':
-				return '<link rel="stylesheet" href="'.$this->url.'">';
+			case 'style':
+				return '<link rel="stylesheet" href="'.$this->url.'">'.PHP_EOL;
 				break;
 
 			// Generate the HTML script tag for scripts.
-			case 'js':
-				return '<script type="text/javascript" src="'.$this->url.'"></script>';
+			case 'script':
+				return '<script type="text/javascript" src="'.$this->url.'"></script>'.PHP_EOL;
 				break;
 		}
 	}

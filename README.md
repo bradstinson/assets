@@ -3,7 +3,7 @@ Assets
 [![Build Status](https://travis-ci.org/bradstinson/assets.png?branch=master)](https://travis-ci.org/bradstinson/assets)
 
 
-Assets is yet another CSS/JavaScript minificaton and combination library. However, unlike most other libraries (which rely on Assetic), this ones takes a more simplistic approach.
+Assets is yet another CSS/JavaScript minificaton and combination library. However, unlike most other libraries, this ones takes a more simplistic approach.
 
 Assets supports minifying and combining stylesheets and scripts, in an effort to reduce the number and size of http requests needed to load a given page. The generated file is also cached, which prevents an application from having to generate the same file for every new request.
 
@@ -11,102 +11,61 @@ Assets supports minifying and combining stylesheets and scripts, in an effort to
 Basic usage
 -----------
 
-### CSS
-
-CSS files can be added using the following command, where "file1.css" and "file2.css" are the CSS files you want to include,
-and are located at assets/css/file1.css and assets/css/file2.css.
+By default, this library supports CSS, Less, Javascript, and CoffeeScript files. The add method will use the file extension of each asset to determine the type of file we are registering:
 
 ```php
-Assets::css('file1.css');
-Assets::css('file2.css');
+Assets::add('file1.css');
 ```
 
-You may also submit files as an array. 
-
 ```php
-Assets::css(array('file1.css', 'file2.css'));
+Assets::add('file1.less');
 ```
 
-Assets will minify both CSS files and combine them into a single file (which is written to 'assets/cache' directory). The proper tags will then be returned.
-To include this file in your page, use the following:
+```php
+Assets::add('file1.js');
+```
 
 ```php
-echo Assets::renderCss();
+Assets::add('file1.coffee');
+```
+
+In addition to passing a single file as a string, the add method also allows you to submit files as an array:
+
+```php
+Assets::add(array('file1.css', 'file2.css'));
+```
+
+### Dumping Assets
+
+Assets will compile and combine your files and write them to the 'assets/cache' directory. When you are ready to place the links to the registered assets on your view, you may use the styles or scripts methods:
+
+
+```php
+echo Assets::styles();
 /*
 Returns something like:
 <link rel="stylesheet" href="/assets/cache/3cf89b9f723e22c1caf26f8d4d1fdc31.css">
 */
 ```
 
-### LESS
-
-Less files can be added using the following command, where "file1.less" is the Less file you want to compile, and is located at assets/css/file1.less.
-
 ```php
-Assets::less('file1.less');
-```
-
-You may also submit multiple files as an array. 
-
-```php
-Assets::css(array('file1.less', 'file2.less'));
-```
-
-Your Less files will be automatically compiled and combined with your CSS files into a single file (which is written to 'assets/cache' directory). The proper tags will then be returned.
-
-### JS
-
-Javascript files can be added using the following command, where "file1.js" and "file2.js" are the javascript files you want to include,
-and are located at assets/js/file1.js and assets/js/file2.js.
-
-```php
-Assets::js('file1.js');
-Assets::js('file2.js');
-```
-
-You may also submit files as an array. 
-
-```php
-Assets::js(array('file1.js', 'file2.js'));
-```
-
-Assets will minify both JS files and combine them into a single file (which is written to 'assets/cache' directory). The proper tags will then be returned.
-To include this file in your page, use the following:
-
-```php
-echo Assets::renderJs();
+echo Assets::scripts();
 /*
 Returns something like:
 <script src="/assets/cache/9cf2803d8f075cb7d1ad31940738f35e.js"></script>
+
 */
 ```
 
-### CoffeeScript
-
-CoffeeScript files can be added using the following command, where "file1.coffee" is the CoffeeScript file you want to compile, and is located at assets/js/file1.coffee.
-
-```php
-Assets::coffee('file1.coffee');
-```
-
-You may also submit multiple files as an array. 
-
-```php
-Assets::coffee(array('file1.coffee', 'file2.coffee'));
-```
-
-Your CoffeeScript files will be automatically compiled and combined with your JS files into a single file (which is written to 'assets/cache' directory). The proper tags will then be returned.
-
-If you would like to generate the CSS and JS tags together, you can call:
+You may also return both scripts and style tags by using the render method:
 ```php
 echo Assets::render();
 /*
-Which will return:
+Returns something like:
 <link rel="stylesheet" href="/assets/cache/3cf89b9f723e22c1caf26f8d4d1fdc31.css">
 <script src="/assets/cache/9cf2803d8f075cb7d1ad31940738f35e.js"></script>
-*/
-```
 
+*/
 
 Configuration
 ------

@@ -15,11 +15,11 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 	{
 		$this->setup();
 
-		Assets::css(array('test.css', 'test2.css'));
-		Assets::less('test.less');
+		Assets::add(array('css/test.css', 'css/test2.css'));
+		Assets::add('js/test.less');
 
 		// Does returned tag match expected output?
-		$this->assertTrue(Assets::renderCss() == "<link rel=\"stylesheet\" href=\"/assets/cache/". Assets::getCompiledName('css') ."\">");
+		$this->assertTrue(Assets::styles() == "<link rel=\"stylesheet\" href=\"/assets/cache/". Assets::getCompiledName('css') ."\">");
 
 		// Does file exist?
 		$this->filename = __DIR__.'/assets/cache/'. Assets::getCompiledName('css');
@@ -36,11 +36,11 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function testRenderJs()
 	{
-		Assets::js(array('plugins.js', 'functions.js'));
-		Assets::coffee('test.coffee');
+		Assets::add(array('js/plugins.js', 'js/functions.js'));
+		Assets::add('js/test.coffee');
 
 		// Does returned tag match expected output?
-		$this->assertTrue(Assets::renderJs() == "<script type=\"text/javascript\" src=\"/assets/cache/". Assets::getCompiledName('js') ."\"></script>");
+		$this->assertTrue(Assets::scripts() == "<script type=\"text/javascript\" src=\"/assets/cache/". Assets::getCompiledName('js') ."\"></script>");
 
 		// Does file exist?
 		$this->filename = __DIR__.'/assets/cache/'. Assets::getCompiledName('js');
@@ -55,10 +55,10 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function testRenderLess()
 	{
-		Assets::less('test.less');
+		Assets::add('css/test.less');
 
 		// Does returned tag match expected output?
-		$this->assertTrue(Assets::renderCss() == "<link rel=\"stylesheet\" href=\"/assets/cache/". Assets::getCompiledName('css') ."\">");
+		$this->assertTrue(Assets::styles() == "<link rel=\"stylesheet\" href=\"/assets/cache/". Assets::getCompiledName('css') ."\">");
 
 		// Does file exist?
 		$this->filename = __DIR__.'/assets/cache/'. Assets::getCompiledName('css');
@@ -76,10 +76,10 @@ class AssetsTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function testRenderCoffee()
 	{
-		Assets::coffee('test.coffee');
+		Assets::add('js/test.coffee');
 
 		// Does returned tag match expected output?
-		$this->assertTrue(Assets::renderJs() == "<script type=\"text/javascript\" src=\"/assets/cache/". Assets::getCompiledName('js') ."\"></script>");
+		$this->assertTrue(Assets::scripts() == "<script type=\"text/javascript\" src=\"/assets/cache/". Assets::getCompiledName('js') ."\"></script>");
 
 		// Does file exist?
 		$this->filename = __DIR__.'/assets/cache/'. Assets::getCompiledName('js');
