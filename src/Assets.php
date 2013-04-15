@@ -142,7 +142,7 @@ class Assets {
      * Renders CSS/JS files (returns HTML tags)
      * @return string
      */
-    public static function render($type)
+    public static function render($type = NULL)
     {
         // If $type is null, render both types
         if(! $type){ $type = array('css', 'js'); }
