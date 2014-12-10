@@ -78,60 +78,55 @@ class Assets {
     /**
      * Adds a CSS file to be rendered
      * @param  string   $files
-     * @param  boolean  $localFile
      * @return boolean
      */
-    public static function css($files, $localFile=true)
+    public static function css($files)
     {
         self::init();
-        return self::add($files, 'css', $localFile);
+        return self::add($files, 'css');
     }
 
     /**
      * Adds a Less file to be rendered
      * @param  string   $files
-     * @param  boolean  $localFile
      * @return boolean
      */
-    public static function less($files, $localFile=true)
+    public static function less($files)
     {
         self::init();
-        return self::add($files, 'css', $localFile, array(new LessphpFilter));
+        return self::add($files, 'css', array(new LessphpFilter));
     }    
 
     /**
      * Adds a JS file to be rendered
      * @param  string   $files
-     * @param  boolean  $localFile
      * @return boolean
      */
-    public static function js($files, $localFile=true)
+    public static function js($files)
     {
         self::init();
-        return self::add($files, 'js', $localFile);
+        return self::add($files, 'js');
     }    
 
     /**
      * Adds a coffeescript file to be rendered
      * @param  string   $files
-     * @param  boolean  $localFile
      * @return boolean
      */
-    public static function coffee($files, $localFile=true)
+    public static function coffee($files)
     {
         self::init();
-        return self::add($files, 'js', $localFile, array(new CoffeeScriptFilter));
+        return self::add($files, 'js', array(new CoffeeScriptFilter));
     }  
 
     /**
      * Add assets to be rendered
      * @param  string   $files
      * @param  string   $type
-     * @param  boolean  $localFile
      * @param  array    $filters
      * @return boolean
      */
-    protected static function add($files, $type, $localFile, $filters=array())
+    protected static function add($files, $type, $filters=array())
     {
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
@@ -141,10 +136,12 @@ class Assets {
 
         // Load each asset, if file exists
         foreach($files as $file){
-            if($localFile) {
-                self::$collections[$type]->add(new FileAsset($path.$file, $filters));
-            } else {
+
+            // Is Asset a valid URL?
+            if(filter_var($file, FILTER_VALIDATE_URL)) {
                 self::$collections[$type]->add(new HttpAsset($file, $filters));
+            } else {
+                self::$collections[$type]->add(new FileAsset($path.$file, $filters));
             }
         }
     }    
