@@ -1,8 +1,9 @@
 <?php
 
-use Assetic\Asset\Asset;
+use Assetic\Asset;
 use Assetic\Asset\FileAsset;
 use Assetic\Asset\AssetCollection;
+use Assetic\Asset\HttpAsset;
 use Assetic\Filter\CssMinFilter;
 use Assetic\Filter\CssRewriteFilter;
 use Assetic\Filter\LessphpFilter;
@@ -19,7 +20,7 @@ class Assets {
     // Directories
     protected static $assets_dir    = 'assets/';  
     protected static $cache_dir     = 'cache/';
-    
+
     // Paths
     protected static $assets_path;
     protected static $cache_path;
@@ -76,55 +77,61 @@ class Assets {
 
     /**
      * Adds a CSS file to be rendered
-     * @param  string  $files
+     * @param  string   $files
+     * @param  boolean  $localFile
      * @return boolean
      */
-    public static function css($files)
+    public static function css($files, $localFile=true)
     {
         self::init();
-        return self::add($files, 'css');
+        return self::add($files, 'css', $localFile);
     }
 
     /**
      * Adds a Less file to be rendered
-     * @param  string  $files
+     * @param  string   $files
+     * @param  boolean  $localFile
      * @return boolean
      */
-    public static function less($files)
+    public static function less($files, $localFile=true)
     {
         self::init();
-        return self::add($files, 'css', array(new LessphpFilter));
+        return self::add($files, 'css', $localFile, array(new LessphpFilter));
     }    
 
     /**
      * Adds a JS file to be rendered
-     * @param  string  $files
+     * @param  string   $files
+     * @param  boolean  $localFile
      * @return boolean
      */
-    public static function js($files)
+    public static function js($files, $localFile=true)
     {
         self::init();
-        return self::add($files, 'js');
+        return self::add($files, 'js', $localFile);
     }    
 
     /**
      * Adds a coffeescript file to be rendered
-     * @param  string  $files
+     * @param  string   $files
+     * @param  boolean  $localFile
      * @return boolean
      */
-    public static function coffee($files)
+    public static function coffee($files, $localFile=true)
     {
         self::init();
-        return self::add($files, 'js', array(new CoffeeScriptFilter));
+        return self::add($files, 'js', $localFile, array(new CoffeeScriptFilter));
     }  
 
     /**
      * Add assets to be rendered
-     * @param  string  $files
-     * @param  string  $type     
+     * @param  string   $files
+     * @param  string   $type
+     * @param  boolean  $localFile
+     * @param  array    $filters
      * @return boolean
      */
-    protected static function add($files, $type, $filters=array())
+    protected static function add($files, $type, $localFile, $filters=array())
     {
         // If string passed, convert to array
         $files = is_string($files) ? array($files) : $files;
@@ -134,12 +141,17 @@ class Assets {
 
         // Load each asset, if file exists
         foreach($files as $file){
-            self::$collections[$type]->add(new FileAsset($path.$file, $filters));
+            if($localFile) {
+                self::$collections[$type]->add(new FileAsset($path.$file, $filters));
+            } else {
+                self::$collections[$type]->add(new HttpAsset($file, $filters));
+            }
         }
     }    
 
     /**
      * Renders CSS/JS files (returns HTML tags)
+     * @param  mixed    $type   Can be NULL, 'css', or 'js'
      * @return string
      */
     public static function render($type = NULL)
@@ -192,8 +204,10 @@ class Assets {
 
     /**
      * Sets path to the assets directory
-     * @param  string  $dir
-     * @return boolean
+     * @param string $path
+     * @return bool
+     * @throws \Assets\AssetsException
+     * @internal param string $dir
      */
     public static function setPath($path='')
     {
@@ -217,7 +231,7 @@ class Assets {
 
     /**
      * Returns compiled filename
-     * @param  string  $base_url
+     * @param  string  $type
      * @return boolean
      */
     public static function getCompiledName($type)
